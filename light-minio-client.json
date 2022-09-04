@@ -1,0 +1,16 @@
+{
+  "endpoint": "minio服务器地址",
+  "access_key_id": "xxx",
+  "secret_access_key": "xxxx",
+  "bucket_name": "桶名称",
+  "is_ssl": true,
+  "content_types": {
+    ".jpg": "image/jpg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".bmp": "image/bmp",
+    ".txt": "text/plain",
+    ".log": "text/plain",
+    ".py": "text/plain"
+  }
+}
