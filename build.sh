@@ -10,20 +10,8 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 cd $DIR
 
-export CGO_ENABLED=0
-os_list=(linux windows darwin)
-arch_list=(amd64 arm64)
-for os in ${os_list[*]}; do
-  for arch in ${arch_list[*]}; do
-      echo build for ${os} ${arch} ...
-      filename=light_minio_client.${os}.${arch}
-      if [ "$os" == "windows" ]; then
-          filename=light_minio_client.${os}.${arch}.exe
-      fi
-      GOOS=${os} GOARCH=${arch} go build \
-                                  -trimpath \
-                                  -ldflags \
-                                  "-s -w" \
-                                  -o ./release/${filename} src/*.go
-  done
-done
+go build \
+      -trimpath \
+      -ldflags \
+      "-s -w" \
+      -o ./release/light_minio_client src/*.go
