@@ -3,6 +3,7 @@
   "access_key_id": "xxx",
   "secret_access_key": "xxxx",
   "bucket_name": "桶名称",
+  "ssl_cert_file":"证书文件地址",
   "is_ssl": true,
   "content_types": {
     ".jpg": "image/jpg",

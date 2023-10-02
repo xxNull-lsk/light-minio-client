@@ -27,10 +27,10 @@ for os in ${os_list[*]}; do
                                   -o ./release/${filename} src/*.go
 
       if [ "$os" == "windows" ]; then
-          zip -q -o $filename.zip $filename
+          zip -q -o ./release/$filename.zip ./release/$filename
       else
-          tar -czf $filename.tar.gz $filename
+          tar -czf ./release/$filename.tar.gz ./release/$filename
       fi
-      rm $filename
+      rm ./release/$filename
   done
 done

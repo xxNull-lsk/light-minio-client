@@ -5,12 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
+	"syscall"
 	"time"
+
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 type Cfg struct {
@@ -19,6 +24,7 @@ type Cfg struct {
 	SecretAccessKey string            `json:"secret_access_key"`
 	BucketName      string            `json:"bucket_name"`
 	IsSSL           bool              `json:"is_ssl"`
+	SslCertFile     string            `json:"ssl_cert_file"`
 	ContentTypes    map[string]string `json:"content_types"`
 }
 
@@ -56,6 +62,27 @@ func Upload(client *minio.Client, srcFilePath string, bucketName string, content
 	return client.EndpointURL().JoinPath(bucketName, newFileName).String(), nil
 }
 
+func downloadFile(sslCertFile string) string {
+	resp, err := http.Get(sslCertFile)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	pid := syscall.Getpid()
+	sslCertFile = fmt.Sprintf("/tmp/light_minio_client_%d.cert", pid)
+	file, err := os.OpenFile(sslCertFile, os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		fmt.Println("open file failed, err:", err)
+		return ""
+	}
+	defer file.Close()
+	file.Write(body)
+
+	return sslCertFile
+}
+
 func main() {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -75,6 +102,15 @@ func main() {
 		fmt.Printf("%v", err)
 		log.Fatalln(err)
 		return
+	}
+
+	sslCertFile := cfg.SslCertFile
+	if strings.HasPrefix(sslCertFile, "http://") ||
+		strings.HasPrefix(sslCertFile, "https://") {
+		sslCertFile = downloadFile(sslCertFile)
+	}
+	if len(sslCertFile) > 0 {
+		os.Setenv("SSL_CERT_FILE", sslCertFile)
 	}
 
 	client, err := Create(cfg.Endpoint, cfg.AccessKeyID, cfg.SecretAccessKey, cfg.IsSSL)
